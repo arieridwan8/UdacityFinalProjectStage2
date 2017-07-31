@@ -2,8 +2,12 @@ package id.arieridwan.jagatcinema.features.main;
 
 import android.util.Log;
 import id.arieridwan.jagatcinema.base.BasePresenter;
-import id.arieridwan.jagatcinema.models.MovieDao;
+import id.arieridwan.jagatcinema.models.Favourite;
+import id.arieridwan.jagatcinema.models.FavouriteDao;
+import id.arieridwan.jagatcinema.models.Movie;
 import id.arieridwan.jagatcinema.utils.Constants;
+import io.realm.Realm;
+import io.realm.RealmResults;
 import rx.Subscriber;
 
 /**
@@ -16,10 +20,10 @@ public class MainPresenter extends BasePresenter<MainView> {
         super.attachView(view);
     }
 
-    void loadData(final String filter, String apiKey) {
+    public void loadData(final String filter, String apiKey) {
         view.startLoading();
         addSubscribe(apiServices.getPopularMovie(filter,apiKey),
-                new Subscriber<MovieDao>() {
+                new Subscriber<Movie>() {
             @Override
             public void onCompleted() {
 
@@ -32,18 +36,18 @@ public class MainPresenter extends BasePresenter<MainView> {
             }
 
             @Override
-            public void onNext(MovieDao item) {
-                String text;
-                if(filter.equals(Constants.popular)){
-                    text = "Popular";
-                }else {
-                    text = "Top Rated";
-                }
-                view.getDataSuccess(item);
-                view.setFilterText(text);
+            public void onNext(Movie item) {
+                view.getDataSuccess(item, filter);
                 view.stopAndHide();
             }
         });
+    }
+
+    public void loadFavourite(Realm realm) {
+        view.startLoading();
+        RealmResults<Favourite> results = FavouriteDao.getFavourites(realm);
+        view.getFavourite(results);
+        view.stopAndHide();
     }
 
 }

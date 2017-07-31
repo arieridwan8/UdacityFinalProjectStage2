@@ -13,15 +13,15 @@ import lombok.Getter;
 
 @Parcel
 @Getter
-public class MovieDao implements Serializable {
+public class Movie {
     private int page;
     private int total_results;
     private int total_pages;
     private List<ResultsBean> results;
-    public MovieDao() {
+    public Movie() {
     }
-    public MovieDao(int page, int total_results,
-                    int total_pages, List<ResultsBean> results) {
+    public Movie(int page, int total_results,
+                 int total_pages, List<ResultsBean> results) {
         this.page = page;
         this.total_results = total_results;
         this.total_pages = total_pages;
@@ -29,7 +29,7 @@ public class MovieDao implements Serializable {
     }
     @Parcel
     @Getter
-    public static class ResultsBean implements Serializable {
+    public static class ResultsBean {
         private int vote_count;
         private int id;
         private boolean video;

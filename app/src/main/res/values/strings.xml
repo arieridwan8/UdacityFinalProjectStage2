@@ -19,4 +19,6 @@
     <string name="trailers">Trailers</string>
     <string name="reviews">Reviews</string>
     <string name="show_more">SHOW MORE</string>
+    <string name="added">Added to favourite</string>
+    <string name="removed">Removed from favourite</string>
 </resources>

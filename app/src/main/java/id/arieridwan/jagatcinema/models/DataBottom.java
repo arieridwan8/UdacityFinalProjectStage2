@@ -7,10 +7,10 @@ import lombok.Getter;
  */
 
 @Getter
-public class DetailDao {
-    private TrailerDao trailerDao;
-    private ReviewDao reviewDao;
-    public DetailDao(TrailerDao trailerDao, ReviewDao reviewDao) {
+public class DataBottom {
+    private Trailer trailerDao;
+    private Review reviewDao;
+    public DataBottom(Trailer trailerDao, Review reviewDao) {
         this.trailerDao = trailerDao;
         this.reviewDao = reviewDao;
     }

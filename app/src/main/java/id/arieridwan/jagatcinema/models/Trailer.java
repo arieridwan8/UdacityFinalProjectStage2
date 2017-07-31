@@ -8,12 +8,12 @@ import lombok.Getter;
  */
 
 @Getter
-public class TrailerDao {
+public class Trailer {
     private int id;
     private List<ResultsBean> results;
-    public TrailerDao() {
+    public Trailer() {
     }
-    public TrailerDao(int id, List<ResultsBean> results) {
+    public Trailer(int id, List<ResultsBean> results) {
         this.id = id;
         this.results = results;
     }

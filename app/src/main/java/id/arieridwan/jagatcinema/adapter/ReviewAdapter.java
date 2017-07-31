@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import id.arieridwan.jagatcinema.R;
 import id.arieridwan.jagatcinema.adapter.holder.ReviewViewHolder;
-import id.arieridwan.jagatcinema.models.ReviewDao;
+import id.arieridwan.jagatcinema.models.Review;
 
 /**
  * Created by arieridwan on 30/07/2017.
@@ -16,10 +16,10 @@ import id.arieridwan.jagatcinema.models.ReviewDao;
 
 public class ReviewAdapter extends RecyclerView.Adapter<ReviewViewHolder> {
 
-    private List<ReviewDao.ResultsBean> mList = new ArrayList<>();
-    private ReviewDao.ResultsBean mData;
+    private List<Review.ResultsBean> mList = new ArrayList<>();
+    private Review.ResultsBean mData;
 
-    public ReviewAdapter(List<ReviewDao.ResultsBean> mList) {
+    public ReviewAdapter(List<Review.ResultsBean> mList) {
         this.mList = mList;
     }
 

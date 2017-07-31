@@ -8,18 +8,15 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
-import android.widget.TextView;
 
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import butterknife.BindView;
 import id.arieridwan.jagatcinema.R;
 import id.arieridwan.jagatcinema.adapter.holder.TrailerViewHolder;
-import id.arieridwan.jagatcinema.models.TrailerDao;
+import id.arieridwan.jagatcinema.models.Trailer;
 import id.arieridwan.jagatcinema.utils.Constants;
 
 /**
@@ -28,11 +25,11 @@ import id.arieridwan.jagatcinema.utils.Constants;
 
 public class TrailerAdapter extends RecyclerView.Adapter<TrailerViewHolder> {
 
-    private List<TrailerDao.ResultsBean> mList = new ArrayList<>();
-    private TrailerDao.ResultsBean mData;
+    private List<Trailer.ResultsBean> mList = new ArrayList<>();
+    private Trailer.ResultsBean mData;
     private Context mContext;
 
-    public TrailerAdapter(List<TrailerDao.ResultsBean> mList) {
+    public TrailerAdapter(List<Trailer.ResultsBean> mList) {
         this.mList = mList;
     }
 

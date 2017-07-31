@@ -1,8 +1,8 @@
 package id.arieridwan.jagatcinema.network;
 
-import id.arieridwan.jagatcinema.models.MovieDao;
-import id.arieridwan.jagatcinema.models.ReviewDao;
-import id.arieridwan.jagatcinema.models.TrailerDao;
+import id.arieridwan.jagatcinema.models.Movie;
+import id.arieridwan.jagatcinema.models.Review;
+import id.arieridwan.jagatcinema.models.Trailer;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
@@ -14,9 +14,9 @@ import rx.Observable;
 
 public interface ApiServices {
     @GET("movie/{filter}")
-    Observable<MovieDao> getPopularMovie(@Path("filter") String filter,@Query("api_key") String apiKey);
+    Observable<Movie> getPopularMovie(@Path("filter") String filter, @Query("api_key") String apiKey);
     @GET("movie/{id}/videos")
-    Observable<TrailerDao> getTrailer(@Path("id") int id,@Query("api_key") String apiKey);
+    Observable<Trailer> getTrailer(@Path("id") int id, @Query("api_key") String apiKey);
     @GET("movie/{id}/reviews")
-    Observable<ReviewDao> getReview(@Path("id") int id,@Query("api_key") String apiKey);
+    Observable<Review> getReview(@Path("id") int id, @Query("api_key") String apiKey);
 }

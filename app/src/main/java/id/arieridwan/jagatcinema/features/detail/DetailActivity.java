@@ -3,6 +3,7 @@ package id.arieridwan.jagatcinema.features.detail;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -14,8 +15,11 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
+
 import com.squareup.picasso.Picasso;
+
 import org.parceler.Parcels;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,11 +29,14 @@ import id.arieridwan.jagatcinema.R;
 import id.arieridwan.jagatcinema.adapter.ReviewAdapter;
 import id.arieridwan.jagatcinema.adapter.TrailerAdapter;
 import id.arieridwan.jagatcinema.base.MvpActivity;
-import id.arieridwan.jagatcinema.models.DetailDao;
-import id.arieridwan.jagatcinema.models.MovieDao;
-import id.arieridwan.jagatcinema.models.ReviewDao;
-import id.arieridwan.jagatcinema.models.TrailerDao;
+import id.arieridwan.jagatcinema.models.DataBottom;
+import id.arieridwan.jagatcinema.models.Favourite;
+import id.arieridwan.jagatcinema.models.Movie;
+import id.arieridwan.jagatcinema.models.Review;
+import id.arieridwan.jagatcinema.models.DataTop;
+import id.arieridwan.jagatcinema.models.Trailer;
 import id.arieridwan.jagatcinema.utils.Constants;
+import io.realm.Realm;
 
 public class DetailActivity extends MvpActivity<DetailPresenter>
         implements DetailView, SwipeRefreshLayout.OnRefreshListener {
@@ -62,17 +69,23 @@ public class DetailActivity extends MvpActivity<DetailPresenter>
     SwipeRefreshLayout swipeRefresh;
     @BindView(R.id.detail_content)
     CoordinatorLayout detailContent;
+    @BindView(R.id.fab)
+    FloatingActionButton fab;
 
     // movie
-    private MovieDao.ResultsBean mData;
+    private Movie.ResultsBean movieModel;
     // trailer
-    private TrailerAdapter mAdapter;
-    private LinearLayoutManager mLinearLayoutManager;
-    private List<TrailerDao.ResultsBean> mList = new ArrayList<>();
+    private TrailerAdapter trailerAdapter;
+    private LinearLayoutManager trailerLinearLayoutManager;
+    private List<Trailer.ResultsBean> trailerList = new ArrayList<>();
     // review
-    private ReviewAdapter mAdapter2;
-    private LinearLayoutManager mLinearLayoutManager2;
-    private List<ReviewDao.ResultsBean> mList2 = new ArrayList<>();
+    private ReviewAdapter reviewAdapter;
+    private LinearLayoutManager reviewLinearLayoutManager2;
+    private List<Review.ResultsBean> reviewList = new ArrayList<>();
+    // favourite
+    private boolean isFavourite = false;
+    private Favourite favouriteModel;
+    private Realm realm = Realm.getDefaultInstance();
 
     @Override
     protected DetailPresenter onCreatePresenter() {
@@ -87,20 +100,59 @@ public class DetailActivity extends MvpActivity<DetailPresenter>
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle("");
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        checkExtra();
+    }
+
+    private void checkExtra() {
         Intent i = getIntent();
-        if (i.hasExtra(Constants.MOVIE_DAO)) {
-            mData = Parcels.unwrap(getIntent()
-                    .getParcelableExtra(Constants.MOVIE_DAO));
-            setData();
-            presenter.loadTrailer(mData.getId(), Constants.API_KEY);
+        if (i.hasExtra(Constants.MOVIE_MODEL)) {
+            movieModel = Parcels.unwrap(getIntent()
+                    .getParcelableExtra(Constants.MOVIE_MODEL));
+            initView();
+            // need to check
+            presenter.checkFavourite(realm, movieModel.getId());
+            presenter.loadData(movieModel.getId(), Constants.API_KEY);
+        } else if (i.hasExtra(Constants.FAVOURITE_MODEL)) {
+            favouriteModel = getIntent()
+                    .getParcelableExtra(Constants.FAVOURITE_MODEL);
+            initView();
+            // no need to check
+            isFavourite = true;
+            checkFavourite();
+            presenter.loadData(favouriteModel.getId(), Constants.API_KEY);
         } else {
             noData();
         }
     }
 
-    private void setData() {
-        String backdrop_url = Constants.IMG_URL + mData.getBackdrop_path();
-        String poster_url = Constants.IMG_URL + mData.getPoster_path();
+    private void initView() {
+        if (movieModel != null) {
+            setMovieData();
+        } else {
+            setFavouriteData();
+        }
+        // trailer
+        trailerAdapter = new TrailerAdapter(trailerList);
+        trailerLinearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        rvTrailer.setAdapter(trailerAdapter);
+        rvTrailer.setLayoutManager(trailerLinearLayoutManager);
+        // review
+        reviewAdapter = new ReviewAdapter(reviewList);
+        reviewLinearLayoutManager2 = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        rvReview.setAdapter(reviewAdapter);
+        rvReview.setLayoutManager(reviewLinearLayoutManager2);
+        swipeRefresh.setOnRefreshListener(this);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                favourite();
+            }
+        });
+    }
+
+    private void setMovieData() {
+        String backdrop_url = Constants.IMG_URL + movieModel.getBackdrop_path();
+        String poster_url = Constants.IMG_URL + movieModel.getPoster_path();
         try {
             Picasso.with(this)
                     .load(backdrop_url)
@@ -115,26 +167,79 @@ public class DetailActivity extends MvpActivity<DetailPresenter>
         } catch (Exception e) {
             Log.e("getDataSuccess: ", e.getMessage());
         }
-        tvTitle.setText(mData.getTitle());
-        tvDate.setText(mData.getRelease_date());
-        tvRate.setText(String.valueOf(mData.getVote_average()));
-        tvPopular.setText(String.valueOf(mData.getPopularity()));
-        tvOverview.setText(mData.getOverview());
-        // trailer
-        mAdapter = new TrailerAdapter(mList);
-        mLinearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
-        rvTrailer.setAdapter(mAdapter);
-        rvTrailer.setLayoutManager(mLinearLayoutManager);
-        // review
-        mAdapter2 = new ReviewAdapter(mList2);
-        mLinearLayoutManager2 = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-        rvReview.setAdapter(mAdapter2);
-        rvReview.setLayoutManager(mLinearLayoutManager2);
-        swipeRefresh.setOnRefreshListener(this);
+        tvTitle.setText(movieModel.getTitle());
+        tvDate.setText(movieModel.getRelease_date());
+        tvRate.setText(String.valueOf(movieModel.getVote_average()));
+        tvPopular.setText(String.valueOf(movieModel.getPopularity()));
+        tvOverview.setText(movieModel.getOverview());
+    }
+
+    private void setFavouriteData() {
+        String backdrop_url = Constants.IMG_URL + favouriteModel.getBackdrop_path();
+        String poster_url = Constants.IMG_URL + favouriteModel.getPoster_path();
+        try {
+            Picasso.with(this)
+                    .load(backdrop_url)
+                    .error(ContextCompat.getDrawable(this, R.drawable.no_image))
+                    .placeholder(ContextCompat.getDrawable(this, R.drawable.place_holder))
+                    .into(ivBackdrop);
+            Picasso.with(this)
+                    .load(poster_url)
+                    .error(ContextCompat.getDrawable(this, R.drawable.no_image))
+                    .placeholder(ContextCompat.getDrawable(this, R.drawable.place_holder))
+                    .into(ivPoster);
+        } catch (Exception e) {
+            Log.e("getDataSuccess: ", e.getMessage());
+        }
+        tvTitle.setText(favouriteModel.getTitle());
+        tvDate.setText(favouriteModel.getRelease_date());
+        tvRate.setText(String.valueOf(favouriteModel.getVote_average()));
+        tvPopular.setText(String.valueOf(favouriteModel.getPopularity()));
+        tvOverview.setText(favouriteModel.getOverview());
+    }
+
+    private void checkFavourite() {
+        if (isFavourite) {
+            fab.setImageResource(R.drawable.ic_favorite_24dp);
+        } else {
+            fab.setImageResource(R.drawable.ic_favorite_border_24dp);
+        }
+    }
+
+    private void favourite() {
+        if (movieModel != null) {
+            if (isFavourite) {
+                isFavourite = false;
+                presenter.removeFromFavourite(realm, movieModel.getId());
+                fab.setImageResource(R.drawable.ic_favorite_border_24dp);
+            } else {
+                isFavourite = true;
+                presenter.addToFavourite(realm, new DataTop(movieModel, favouriteModel));
+                fab.setImageResource(R.drawable.ic_favorite_24dp);
+            }
+        } else {
+            if (isFavourite) {
+                isFavourite = false;
+                presenter.removeFromFavourite(realm, favouriteModel.getId());
+                fab.setImageResource(R.drawable.ic_favorite_border_24dp);
+            } else {
+                isFavourite = true;
+                presenter.addToFavourite(realm, new DataTop(movieModel, favouriteModel));
+                fab.setImageResource(R.drawable.ic_favorite_24dp);
+            }
+        }
     }
 
     private void noData() {
         Snackbar.make(detailContent, getString(R.string.error_text), Snackbar.LENGTH_SHORT).show();
+    }
+
+    private void addedToFavourite() {
+        Snackbar.make(detailContent, getString(R.string.added), Snackbar.LENGTH_SHORT).show();
+    }
+
+    private void removedFromFavourite() {
+        Snackbar.make(detailContent, getString(R.string.removed), Snackbar.LENGTH_SHORT).show();
     }
 
     @Override
@@ -161,24 +266,43 @@ public class DetailActivity extends MvpActivity<DetailPresenter>
     }
 
     @Override
-    public void getDataSuccess(DetailDao item) {
+    public void getDataSuccess(DataBottom item) {
         if (item.getTrailerDao() != null) {
-            mList.addAll(item.getTrailerDao().getResults());
-            mList2.addAll(item.getReviewDao().getResults());
+            trailerList.addAll(item.getTrailerDao().getResults());
+            reviewList.addAll(item.getReviewDao().getResults());
         } else {
             label5.setVisibility(View.GONE);
         }
         if (item.getReviewDao() != null) {
-            mAdapter.notifyDataSetChanged();
-            mAdapter2.notifyDataSetChanged();
+            trailerAdapter.notifyDataSetChanged();
+            reviewAdapter.notifyDataSetChanged();
         } else {
             label6.setVisibility(View.GONE);
         }
     }
 
     @Override
+    public void callBackFavourite(boolean isFavourite) {
+        if (isFavourite) {
+            addedToFavourite();
+        } else {
+            removedFromFavourite();
+        }
+    }
+
+    @Override
+    public void getCheckedFavourite(boolean favourite) {
+        isFavourite = favourite;
+        checkFavourite();
+    }
+
+    @Override
     public void onRefresh() {
-        presenter.loadTrailer(mData.getId(), Constants.API_KEY);
+        if (movieModel != null) {
+            presenter.loadData(movieModel.getId(), Constants.API_KEY);
+        } else {
+            presenter.loadData(favouriteModel.getId(), Constants.API_KEY);
+        }
     }
 
 }

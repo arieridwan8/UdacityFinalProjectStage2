@@ -8,7 +8,7 @@ import lombok.Getter;
  */
 
 @Getter
-public class ReviewDao {
+public class Review {
     private int id;
     private int page;
     private int total_pages;
