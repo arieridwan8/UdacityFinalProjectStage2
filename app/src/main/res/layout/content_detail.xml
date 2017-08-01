@@ -42,6 +42,7 @@
                     android:layout_gravity="center_vertical"
                     android:layout_marginRight="@dimen/dimens_16"
                     android:adjustViewBounds="true"
+                    android:transitionName="poster"
                     tools:src="@drawable/sample_image" />
 
 

@@ -30,6 +30,7 @@ import id.arieridwan.jagatcinema.data.contract.MovieContract;
 import id.arieridwan.jagatcinema.data.models.Favourite;
 import id.arieridwan.jagatcinema.data.models.Movie;
 import id.arieridwan.jagatcinema.utils.Constants;
+import id.arieridwan.jagatcinema.utils.ViewHelper;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 import static id.arieridwan.jagatcinema.data.contract.MovieContract.FavouriteEntry.BACKDROP_PATH;
@@ -85,7 +86,7 @@ public class MainActivity extends MvpActivity<MainPresenter>
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         setSupportActionBar(toolbar);
-        mLayoutManager = new GridLayoutManager(this, 2);
+        mLayoutManager = new GridLayoutManager(this, ViewHelper.calculateNoOfColumns(this));
         mAdapter = new MovieAdapter(mList);
         mAdapter2 = new FavouriteAdapter(mList2);
         rvMovie.setAdapter(mAdapter);

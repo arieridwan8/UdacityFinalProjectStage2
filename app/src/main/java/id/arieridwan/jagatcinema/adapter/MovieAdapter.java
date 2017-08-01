@@ -1,12 +1,17 @@
 package id.arieridwan.jagatcinema.adapter;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
+
 import com.squareup.picasso.Picasso;
 
 import org.parceler.Parcels;
@@ -56,18 +61,25 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieViewHolder> {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        final ImageView ivThumb = holder.mImageThumbnail;
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                moveToDetail(view, pos);
+                moveToDetail(view, pos, ivThumb);
             }
         });
     }
 
-    private void moveToDetail(View view, int pos) {
+    private void moveToDetail(View view, int pos, ImageView imageView) {
         Intent i = new Intent(view.getContext(), DetailActivity.class);
         i.putExtra(Constants.MOVIE_MODEL, Parcels.wrap(mList.get(pos)));
-        view.getContext().startActivity(i);
+        ActivityOptionsCompat options = ActivityOptionsCompat.
+                makeSceneTransitionAnimation((Activity) mContext, imageView, "poster");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
+            mContext.startActivity(i, options.toBundle());
+        } else {
+            mContext.startActivity(i);
+        }
     }
 
     @Override
