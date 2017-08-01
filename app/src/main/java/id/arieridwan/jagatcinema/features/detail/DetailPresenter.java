@@ -1,12 +1,16 @@
 package id.arieridwan.jagatcinema.features.detail;
 
+import android.content.ContentResolver;
+
 import id.arieridwan.jagatcinema.base.BasePresenter;
-import id.arieridwan.jagatcinema.models.DataBottom;
-import id.arieridwan.jagatcinema.models.FavouriteDao;
-import id.arieridwan.jagatcinema.models.Review;
-import id.arieridwan.jagatcinema.models.DataTop;
-import id.arieridwan.jagatcinema.models.Trailer;
-import io.realm.Realm;
+import id.arieridwan.jagatcinema.data.models.DataBottom;
+import id.arieridwan.jagatcinema.data.models.Favourite;
+import id.arieridwan.jagatcinema.data.models.FavouriteDao;
+import id.arieridwan.jagatcinema.data.models.Review;
+import id.arieridwan.jagatcinema.data.models.DataTop;
+import id.arieridwan.jagatcinema.data.models.Trailer;
+import id.arieridwan.jagatcinema.data.DBHelper;
+import id.arieridwan.jagatcinema.utils.PrefHelper;
 import rx.Observable;
 import rx.Subscriber;
 import rx.functions.Func2;
@@ -51,24 +55,14 @@ public class DetailPresenter extends BasePresenter<DetailView> {
                 });
     }
 
-    public void addToFavourite(Realm realm, DataTop data) {
-        if(data.getMovie() != null) {
-            FavouriteDao.addToFavourite(realm, data);
-            view.callBackFavourite(true);
-        } else {
-            FavouriteDao.addToFavourite(realm, data);
-            view.callBackFavourite(true);
-        }
+    public void addToFavourite(ContentResolver resolver, DataTop data) {
+        FavouriteDao.saveFavourite(resolver, data);
+        view.callBackFavourite(true);
     }
 
-    public void removeFromFavourite(Realm realm, int id) {
-        FavouriteDao.removeFromFavourite(realm, id);
+    public void removeFromFavourite(ContentResolver resolver, int id) {
+        FavouriteDao.removeFavourite(resolver, id);
         view.callBackFavourite(false);
-    }
-
-    public void checkFavourite(Realm realm, int id) {
-        boolean isFavourite = FavouriteDao.checkFavourite(realm, id);
-        view.getCheckedFavourite(isFavourite);
     }
 
 }

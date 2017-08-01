@@ -1,37 +1,46 @@
 package id.arieridwan.jagatcinema.features.main;
 
 import android.content.DialogInterface;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import id.arieridwan.jagatcinema.R;
 import id.arieridwan.jagatcinema.adapter.FavouriteAdapter;
 import id.arieridwan.jagatcinema.adapter.MovieAdapter;
 import id.arieridwan.jagatcinema.base.MvpActivity;
-import id.arieridwan.jagatcinema.models.Favourite;
-import id.arieridwan.jagatcinema.models.Movie;
+import id.arieridwan.jagatcinema.data.contract.MovieContract;
+import id.arieridwan.jagatcinema.data.models.Favourite;
+import id.arieridwan.jagatcinema.data.models.Movie;
 import id.arieridwan.jagatcinema.utils.Constants;
-import io.realm.Realm;
-import io.realm.RealmResults;
+import static id.arieridwan.jagatcinema.data.contract.MovieContract.FavouriteEntry.BACKDROP_PATH;
+import static id.arieridwan.jagatcinema.data.contract.MovieContract.FavouriteEntry.ID;
+import static id.arieridwan.jagatcinema.data.contract.MovieContract.FavouriteEntry.OVERVIEW;
+import static id.arieridwan.jagatcinema.data.contract.MovieContract.FavouriteEntry.POPULARITY;
+import static id.arieridwan.jagatcinema.data.contract.MovieContract.FavouriteEntry.POSTER_PATH;
+import static id.arieridwan.jagatcinema.data.contract.MovieContract.FavouriteEntry.RELEASE_DATE;
+import static id.arieridwan.jagatcinema.data.contract.MovieContract.FavouriteEntry.TITLE;
+import static id.arieridwan.jagatcinema.data.contract.MovieContract.FavouriteEntry.VOTE_AVERAGE;
 
 public class MainActivity extends MvpActivity<MainPresenter>
-        implements MainView, SwipeRefreshLayout.OnRefreshListener {
+        implements MainView, SwipeRefreshLayout.OnRefreshListener,
+        LoaderManager.LoaderCallbacks<Cursor>{
 
     @BindView(R.id.rv_movie)
     RecyclerView rvMovie;
@@ -51,12 +60,11 @@ public class MainActivity extends MvpActivity<MainPresenter>
     // favourite
     private List<Favourite> mList2 = new ArrayList<>();
     private FavouriteAdapter mAdapter2;
+    private static final int MOVIE_LOADER_ID = 1;
 
     private GridLayoutManager mLayoutManager;
     private AlertDialog alertDialog1;
     private int CURRENT_TYPE = 0;
-
-    private Realm realm = Realm.getDefaultInstance();
 
     @Override
     protected MainPresenter onCreatePresenter() {
@@ -141,16 +149,6 @@ public class MainActivity extends MvpActivity<MainPresenter>
         rvMovie.setAdapter(mAdapter);
     }
 
-    @Override
-    public void getFavourite(RealmResults<Favourite> results) {
-        String text = "Favourite";
-        tvFilter.setText(text);
-        mList2.clear();
-        mAdapter2.notifyDataSetChanged();
-        mList2.addAll(results);
-        mAdapter2.notifyDataSetChanged();
-        rvMovie.setAdapter(mAdapter2);
-    }
 
     private void filter() {
         String[] values = {getString(R.string.popular), getString(R.string.top_rated), getString(R.string.favorite)};
@@ -186,9 +184,76 @@ public class MainActivity extends MvpActivity<MainPresenter>
                 presenter.loadData(Constants.top_rated, Constants.API_KEY);
                 break;
             case 2:
-                presenter.loadFavourite(realm);
+                getSupportLoaderManager().restartLoader(MOVIE_LOADER_ID, null, this);
                 break;
         }
         CURRENT_TYPE = type;
+    }
+
+    @Override
+    public Loader<Cursor> onCreateLoader(int id, Bundle args) {
+        return new AsyncTaskLoader<Cursor>(this) {
+            Cursor mMovieData = null;
+            @Override
+            protected void onStartLoading() {
+                if (mMovieData !=null){
+                    deliverResult(mMovieData);
+                } else{
+                    forceLoad();
+                }
+            }
+            @Override
+            public Cursor loadInBackground() {
+                try{
+                    Cursor cursor = getContentResolver().query(MovieContract.FavouriteEntry.CONTENT_URI,
+                            null,
+                            null,
+                            null,
+                            MovieContract.FavouriteEntry.ID);
+
+                    return cursor;
+
+                }catch (Exception e){
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+            public void deliverResult(Cursor data) {
+                mMovieData = data;
+                super.deliverResult(data);
+            }
+        };
+    }
+
+    @Override
+    public void onLoadFinished(Loader<Cursor> loader, Cursor data) {
+        cursorToListMovies(data);
+        stopAndHide();
+    }
+
+    @Override
+    public void onLoaderReset(Loader<Cursor> loader) {
+
+    }
+
+    public void cursorToListMovies(Cursor cursor){
+        mList2.clear();
+        mAdapter2.notifyDataSetChanged();
+        while (cursor.moveToNext()){
+            Favourite favourites = new Favourite();
+            favourites.setId(cursor.getInt(cursor.getColumnIndex(ID)));
+            favourites.setTitle(cursor.getString(cursor.getColumnIndex(TITLE)));
+            favourites.setPoster_path(cursor.getString(cursor.getColumnIndex(POSTER_PATH)));
+            favourites.setOverview(cursor.getString(cursor.getColumnIndex(OVERVIEW)));
+            favourites.setBackdrop_path(cursor.getString(cursor.getColumnIndex(BACKDROP_PATH)));
+            favourites.setRelease_date(cursor.getString(cursor.getColumnIndex(RELEASE_DATE)));
+            favourites.setVote_average(cursor.getDouble(cursor.getColumnIndex(VOTE_AVERAGE)));
+            favourites.setPopularity(cursor.getDouble(cursor.getColumnIndex(POPULARITY)));
+            mList2.add(favourites);
+            mAdapter2.notifyDataSetChanged();
+        }
+        String text = getString(R.string.favorite);
+        tvFilter.setText(text);
+        rvMovie.setAdapter(mAdapter2);
     }
 }

@@ -1,8 +1,8 @@
 package id.arieridwan.jagatcinema.network;
 
-import id.arieridwan.jagatcinema.models.Movie;
-import id.arieridwan.jagatcinema.models.Review;
-import id.arieridwan.jagatcinema.models.Trailer;
+import id.arieridwan.jagatcinema.data.models.Movie;
+import id.arieridwan.jagatcinema.data.models.Review;
+import id.arieridwan.jagatcinema.data.models.Trailer;
 import retrofit2.http.GET;
 import retrofit2.http.Path;
 import retrofit2.http.Query;

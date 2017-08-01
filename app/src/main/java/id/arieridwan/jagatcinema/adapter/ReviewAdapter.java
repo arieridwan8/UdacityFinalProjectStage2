@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 import id.arieridwan.jagatcinema.R;
 import id.arieridwan.jagatcinema.adapter.holder.ReviewViewHolder;
-import id.arieridwan.jagatcinema.models.Review;
+import id.arieridwan.jagatcinema.data.models.Review;
 
 /**
  * Created by arieridwan on 30/07/2017.

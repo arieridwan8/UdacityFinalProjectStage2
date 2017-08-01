@@ -1,5 +1,6 @@
 package id.arieridwan.jagatcinema.features.detail;
 
+import android.content.ContentResolver;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
@@ -19,24 +20,23 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 
 import org.parceler.Parcels;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import id.arieridwan.jagatcinema.R;
 import id.arieridwan.jagatcinema.adapter.ReviewAdapter;
 import id.arieridwan.jagatcinema.adapter.TrailerAdapter;
 import id.arieridwan.jagatcinema.base.MvpActivity;
-import id.arieridwan.jagatcinema.models.DataBottom;
-import id.arieridwan.jagatcinema.models.Favourite;
-import id.arieridwan.jagatcinema.models.Movie;
-import id.arieridwan.jagatcinema.models.Review;
-import id.arieridwan.jagatcinema.models.DataTop;
-import id.arieridwan.jagatcinema.models.Trailer;
+import id.arieridwan.jagatcinema.data.models.DataBottom;
+import id.arieridwan.jagatcinema.data.models.Favourite;
+import id.arieridwan.jagatcinema.data.models.Movie;
+import id.arieridwan.jagatcinema.data.models.Review;
+import id.arieridwan.jagatcinema.data.models.DataTop;
+import id.arieridwan.jagatcinema.data.models.Trailer;
 import id.arieridwan.jagatcinema.utils.Constants;
-import io.realm.Realm;
+import id.arieridwan.jagatcinema.data.DBHelper;
+import id.arieridwan.jagatcinema.utils.PrefHelper;
 
 public class DetailActivity extends MvpActivity<DetailPresenter>
         implements DetailView, SwipeRefreshLayout.OnRefreshListener {
@@ -85,7 +85,7 @@ public class DetailActivity extends MvpActivity<DetailPresenter>
     // favourite
     private boolean isFavourite = false;
     private Favourite favouriteModel;
-    private Realm realm = Realm.getDefaultInstance();
+    private ContentResolver contentResolver;
 
     @Override
     protected DetailPresenter onCreatePresenter() {
@@ -110,11 +110,12 @@ public class DetailActivity extends MvpActivity<DetailPresenter>
                     .getParcelableExtra(Constants.MOVIE_MODEL));
             initView();
             // need to check
-            presenter.checkFavourite(realm, movieModel.getId());
+            boolean favouriteState = PrefHelper.getStateChecking(this, movieModel.getTitle());
+            getCheckedFavourite(favouriteState);
             presenter.loadData(movieModel.getId(), Constants.API_KEY);
         } else if (i.hasExtra(Constants.FAVOURITE_MODEL)) {
-            favouriteModel = getIntent()
-                    .getParcelableExtra(Constants.FAVOURITE_MODEL);
+            favouriteModel = Parcels.unwrap(getIntent()
+                    .getParcelableExtra(Constants.FAVOURITE_MODEL));
             initView();
             // no need to check
             isFavourite = true;
@@ -126,6 +127,7 @@ public class DetailActivity extends MvpActivity<DetailPresenter>
     }
 
     private void initView() {
+        contentResolver = getContentResolver();
         if (movieModel != null) {
             setMovieData();
         } else {
@@ -210,21 +212,21 @@ public class DetailActivity extends MvpActivity<DetailPresenter>
         if (movieModel != null) {
             if (isFavourite) {
                 isFavourite = false;
-                presenter.removeFromFavourite(realm, movieModel.getId());
+                presenter.removeFromFavourite(contentResolver, movieModel.getId());
                 fab.setImageResource(R.drawable.ic_favorite_border_24dp);
             } else {
                 isFavourite = true;
-                presenter.addToFavourite(realm, new DataTop(movieModel, favouriteModel));
+                presenter.addToFavourite(contentResolver, new DataTop(movieModel, favouriteModel));
                 fab.setImageResource(R.drawable.ic_favorite_24dp);
             }
         } else {
             if (isFavourite) {
                 isFavourite = false;
-                presenter.removeFromFavourite(realm, favouriteModel.getId());
+                presenter.removeFromFavourite(contentResolver, favouriteModel.getId());
                 fab.setImageResource(R.drawable.ic_favorite_border_24dp);
             } else {
                 isFavourite = true;
-                presenter.addToFavourite(realm, new DataTop(movieModel, favouriteModel));
+                presenter.addToFavourite(contentResolver, new DataTop(movieModel, favouriteModel));
                 fab.setImageResource(R.drawable.ic_favorite_24dp);
             }
         }
@@ -236,10 +238,28 @@ public class DetailActivity extends MvpActivity<DetailPresenter>
 
     private void addedToFavourite() {
         Snackbar.make(detailContent, getString(R.string.added), Snackbar.LENGTH_SHORT).show();
+        setStateFavouriteTrue();
+    }
+
+    private void setStateFavouriteTrue() {
+        if(movieModel != null) {
+            PrefHelper.setStateChecking(this, movieModel.getTitle(), true);
+        } else {
+            PrefHelper.setStateChecking(this, favouriteModel.getTitle(), true);
+        }
     }
 
     private void removedFromFavourite() {
         Snackbar.make(detailContent, getString(R.string.removed), Snackbar.LENGTH_SHORT).show();
+        setStateFavouriteFalse();
+    }
+
+    private void setStateFavouriteFalse() {
+        if(movieModel != null) {
+            PrefHelper.setStateChecking(this, movieModel.getTitle(), false);
+        } else {
+            PrefHelper.setStateChecking(this, favouriteModel.getTitle(), false);
+        }
     }
 
     @Override
@@ -290,9 +310,9 @@ public class DetailActivity extends MvpActivity<DetailPresenter>
         }
     }
 
-    @Override
-    public void getCheckedFavourite(boolean favourite) {
+    private void getCheckedFavourite(boolean favourite) {
         isFavourite = favourite;
+        Log.e("getCheckedFavourite: ", favourite+"");
         checkFavourite();
     }
 

@@ -2,12 +2,8 @@ package id.arieridwan.jagatcinema.features.main;
 
 import android.util.Log;
 import id.arieridwan.jagatcinema.base.BasePresenter;
-import id.arieridwan.jagatcinema.models.Favourite;
-import id.arieridwan.jagatcinema.models.FavouriteDao;
-import id.arieridwan.jagatcinema.models.Movie;
-import id.arieridwan.jagatcinema.utils.Constants;
-import io.realm.Realm;
-import io.realm.RealmResults;
+import id.arieridwan.jagatcinema.data.models.Movie;
+import id.arieridwan.jagatcinema.data.DBHelper;
 import rx.Subscriber;
 
 /**
@@ -43,10 +39,9 @@ public class MainPresenter extends BasePresenter<MainView> {
         });
     }
 
-    public void loadFavourite(Realm realm) {
+    public void loadFavourite(DBHelper helper) {
         view.startLoading();
-        RealmResults<Favourite> results = FavouriteDao.getFavourites(realm);
-        view.getFavourite(results);
+//        view.getFavourite(helper.getAllFavourite());
         view.stopAndHide();
     }
 

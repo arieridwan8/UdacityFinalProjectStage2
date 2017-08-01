@@ -16,7 +16,7 @@ import java.util.List;
 
 import id.arieridwan.jagatcinema.R;
 import id.arieridwan.jagatcinema.adapter.holder.TrailerViewHolder;
-import id.arieridwan.jagatcinema.models.Trailer;
+import id.arieridwan.jagatcinema.data.models.Trailer;
 import id.arieridwan.jagatcinema.utils.Constants;
 
 /**

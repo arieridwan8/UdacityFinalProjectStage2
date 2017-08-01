@@ -1,4 +1,4 @@
-package id.arieridwan.jagatcinema.models;
+package id.arieridwan.jagatcinema.data.models;
 
 import java.util.List;
 import lombok.Getter;

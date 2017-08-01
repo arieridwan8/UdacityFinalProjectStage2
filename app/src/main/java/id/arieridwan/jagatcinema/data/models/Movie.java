@@ -1,8 +1,7 @@
-package id.arieridwan.jagatcinema.models;
+package id.arieridwan.jagatcinema.data.models;
 
 import org.parceler.Parcel;
 
-import java.io.Serializable;
 import java.util.List;
 
 import lombok.Getter;

@@ -2,7 +2,6 @@ package id.arieridwan.jagatcinema.adapter;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Parcelable;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -19,7 +18,7 @@ import java.util.List;
 import id.arieridwan.jagatcinema.R;
 import id.arieridwan.jagatcinema.adapter.holder.FavouriteViewHolder;
 import id.arieridwan.jagatcinema.features.detail.DetailActivity;
-import id.arieridwan.jagatcinema.models.Favourite;
+import id.arieridwan.jagatcinema.data.models.Favourite;
 import id.arieridwan.jagatcinema.utils.Constants;
 
 /**
@@ -70,7 +69,7 @@ public class FavouriteAdapter extends RecyclerView.Adapter<FavouriteViewHolder> 
 
     private void moveToDetail(View view, int pos) {
         Intent i = new Intent(view.getContext(), DetailActivity.class);
-        i.putExtra(Constants.FAVOURITE_MODEL, (Parcelable) mList.get(pos));
+        i.putExtra(Constants.FAVOURITE_MODEL, Parcels.wrap(mList.get(pos)));
         view.getContext().startActivity(i);
     }
 
