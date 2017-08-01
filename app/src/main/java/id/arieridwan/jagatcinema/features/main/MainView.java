@@ -1,7 +1,5 @@
 package id.arieridwan.jagatcinema.features.main;
 
-import java.util.List;
-import id.arieridwan.jagatcinema.data.models.Favourite;
 import id.arieridwan.jagatcinema.data.models.Movie;
 
 /**

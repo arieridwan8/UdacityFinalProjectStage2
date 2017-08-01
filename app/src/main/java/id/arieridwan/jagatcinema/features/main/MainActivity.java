@@ -1,5 +1,6 @@
 package id.arieridwan.jagatcinema.features.main;
 
+import android.content.Context;
 import android.content.DialogInterface;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -29,6 +30,8 @@ import id.arieridwan.jagatcinema.data.contract.MovieContract;
 import id.arieridwan.jagatcinema.data.models.Favourite;
 import id.arieridwan.jagatcinema.data.models.Movie;
 import id.arieridwan.jagatcinema.utils.Constants;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
+
 import static id.arieridwan.jagatcinema.data.contract.MovieContract.FavouriteEntry.BACKDROP_PATH;
 import static id.arieridwan.jagatcinema.data.contract.MovieContract.FavouriteEntry.ID;
 import static id.arieridwan.jagatcinema.data.contract.MovieContract.FavouriteEntry.OVERVIEW;
@@ -69,6 +72,11 @@ public class MainActivity extends MvpActivity<MainPresenter>
     @Override
     protected MainPresenter onCreatePresenter() {
         return new MainPresenter(this);
+    }
+
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
     }
 
     @Override

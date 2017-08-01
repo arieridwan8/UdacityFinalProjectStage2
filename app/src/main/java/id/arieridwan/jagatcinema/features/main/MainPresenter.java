@@ -39,10 +39,4 @@ public class MainPresenter extends BasePresenter<MainView> {
         });
     }
 
-    public void loadFavourite(DBHelper helper) {
-        view.startLoading();
-//        view.getFavourite(helper.getAllFavourite());
-        view.stopAndHide();
-    }
-
 }

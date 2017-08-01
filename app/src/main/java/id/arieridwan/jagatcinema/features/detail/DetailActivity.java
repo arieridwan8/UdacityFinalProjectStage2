@@ -1,6 +1,7 @@
 package id.arieridwan.jagatcinema.features.detail;
 
 import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.CoordinatorLayout;
@@ -16,9 +17,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.squareup.picasso.Picasso;
-
 import org.parceler.Parcels;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +34,8 @@ import id.arieridwan.jagatcinema.data.models.Review;
 import id.arieridwan.jagatcinema.data.models.DataTop;
 import id.arieridwan.jagatcinema.data.models.Trailer;
 import id.arieridwan.jagatcinema.utils.Constants;
-import id.arieridwan.jagatcinema.data.DBHelper;
 import id.arieridwan.jagatcinema.utils.PrefHelper;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class DetailActivity extends MvpActivity<DetailPresenter>
         implements DetailView, SwipeRefreshLayout.OnRefreshListener {
@@ -93,6 +92,11 @@ public class DetailActivity extends MvpActivity<DetailPresenter>
     }
 
     @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_detail);
@@ -110,7 +114,7 @@ public class DetailActivity extends MvpActivity<DetailPresenter>
                     .getParcelableExtra(Constants.MOVIE_MODEL));
             initView();
             // need to check
-            boolean favouriteState = PrefHelper.getStateChecking(this, movieModel.getTitle());
+            boolean favouriteState = PrefHelper.getStateChecking(this, String.valueOf(movieModel.getId()));
             getCheckedFavourite(favouriteState);
             presenter.loadData(movieModel.getId(), Constants.API_KEY);
         } else if (i.hasExtra(Constants.FAVOURITE_MODEL)) {
@@ -243,9 +247,9 @@ public class DetailActivity extends MvpActivity<DetailPresenter>
 
     private void setStateFavouriteTrue() {
         if(movieModel != null) {
-            PrefHelper.setStateChecking(this, movieModel.getTitle(), true);
+            PrefHelper.setStateChecking(this, String.valueOf(movieModel.getId()), true);
         } else {
-            PrefHelper.setStateChecking(this, favouriteModel.getTitle(), true);
+            PrefHelper.setStateChecking(this, String.valueOf(favouriteModel.getId()), true);
         }
     }
 
@@ -256,9 +260,9 @@ public class DetailActivity extends MvpActivity<DetailPresenter>
 
     private void setStateFavouriteFalse() {
         if(movieModel != null) {
-            PrefHelper.setStateChecking(this, movieModel.getTitle(), false);
+            PrefHelper.setStateChecking(this, String.valueOf(movieModel.getId()), false);
         } else {
-            PrefHelper.setStateChecking(this, favouriteModel.getTitle(), false);
+            PrefHelper.setStateChecking(this, String.valueOf(favouriteModel.getId()), false);
         }
     }
 
